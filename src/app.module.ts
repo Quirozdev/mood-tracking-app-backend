@@ -1,7 +1,15 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from 'src/users/users.module';
+import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
-  imports: [UsersModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    DatabaseModule,
+    UsersModule,
+  ],
 })
 export class AppModule {}
