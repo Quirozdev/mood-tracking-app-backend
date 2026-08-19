@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordService } from '../password/password.service';
@@ -23,7 +23,19 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    const savedUser = await this.usersRepository.save(user);
+    let savedUser: User;
+
+    try {
+      savedUser = await this.usersRepository.save(user);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.driverError?.code === '23505'
+      ) {
+        throw new ConflictException('An user with this email already exists');
+      }
+      throw error;
+    }
     return plainToInstance(UserResponseDto, savedUser);
   }
 

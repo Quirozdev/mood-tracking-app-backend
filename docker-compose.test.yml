@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:18
+    env_file:
+      - .env.test
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_test_data:/var/lib/postgresql
+    ports:
+      - '5433:5432'
+
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: npm run migration:run
+    env_file:
+      - .env.test
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    env_file:
+      - .env.test
+    ports:
+      - '3001:3000'
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+
+volumes:
+  postgres_test_data:
