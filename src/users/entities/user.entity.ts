@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,17 +12,17 @@ export class User {
   id!: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  name!: string;
+  name!: string | null;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 
-  @Column({ type: 'varchar', length: 55 })
+  @Column({ type: 'varchar', length: 255 })
   password!: string;
 
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Date | null;
 }

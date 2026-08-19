@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordService } from '../password/password.service';
+import { plainToInstance } from 'class-transformer';
+import { UserResponseDto } from './dto/user-reponse.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,7 +23,8 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return await this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+    return plainToInstance(UserResponseDto, savedUser);
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
