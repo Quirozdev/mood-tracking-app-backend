@@ -1,9 +1,5 @@
-import { dirname, join } from 'path';
+import { join } from 'path';
 import { DataSourceOptions } from 'typeorm';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export const databaseOptions: DataSourceOptions = {
   type: 'postgres',

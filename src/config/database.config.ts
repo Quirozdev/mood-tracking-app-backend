@@ -1,4 +1,4 @@
 import { registerAs } from '@nestjs/config';
-import { databaseOptions } from './database.options.js';
+import { databaseOptions } from './database.options';
 
 export default registerAs('database', () => databaseOptions);

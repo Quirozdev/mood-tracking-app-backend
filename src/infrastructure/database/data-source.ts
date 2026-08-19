@@ -1,5 +1,5 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import { databaseOptions } from '../../config/database.options.js';
+import { databaseOptions } from '../../config/database.options';
 
 export default new DataSource(databaseOptions);
