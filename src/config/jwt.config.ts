@@ -1,7 +1,9 @@
 import { registerAs } from '@nestjs/config';
-import { JwtSignOptions } from '@nestjs/jwt';
 
-export default registerAs('jwt', (): JwtSignOptions => ({
-  secret: process.env.JWT_SECRET,
-  expiresIn: '60s',
+export default registerAs('jwt', () => ({
+  accessTokenSecret: process.env.JWT_ACCESS_TOKEN_SECRET,
+  accessTokenExpiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+
+  refreshTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
+  refreshTokenExpiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
 }));

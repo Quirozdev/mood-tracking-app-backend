@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, SerializeOptions } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOperation,
@@ -21,6 +21,7 @@ export class UsersController {
     type: CreateUserDto,
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
+  @SerializeOptions({ type: UserResponseDto })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(createUserDto);
   }

@@ -1,29 +1,25 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
 import { PasswordService } from '../password/password.service';
+import { RefreshTokensDto } from './dto/refresh-tokens.dto';
+import { TokensService } from './tokens.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
+    private readonly tokensService: TokensService,
     private readonly passwordService: PasswordService,
   ) {}
 
   async signIn(
     email: string,
     password: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    const payload = {
-      sub: user.id,
-      email: user.email,
-    };
 
     const match = await this.passwordService.compare(password, user.password);
 
@@ -31,8 +27,42 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const accessToken = await this.jwtService.signAsync(payload);
+    const payload = {
+      sub: user.id,
+    };
 
-    return { accessToken };
+    const accessToken = await this.tokensService.generateAccessToken(payload);
+
+    const refreshToken = await this.tokensService.generateRefreshToken(payload);
+
+    return { accessToken, refreshToken };
+  }
+
+  async refreshTokens(refreshTokensDto: RefreshTokensDto) {
+    const payload = await this.tokensService.verifyRefreshToken<{
+      sub: string;
+    }>(refreshTokensDto.refreshToken);
+
+    if (!payload) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const existingUser = await this.usersService.findUserById(payload.sub);
+
+    if (!existingUser) {
+      throw new UnauthorizedException();
+    }
+
+    const newPayload = {
+      sub: existingUser.id,
+    };
+
+    const accessToken =
+      await this.tokensService.generateAccessToken(newPayload);
+
+    const refreshToken =
+      await this.tokensService.generateRefreshToken(newPayload);
+
+    return { accessToken, refreshToken };
   }
 }

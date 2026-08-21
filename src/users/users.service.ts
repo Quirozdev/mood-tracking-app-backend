@@ -4,8 +4,6 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordService } from '../password/password.service';
-import { plainToInstance } from 'class-transformer';
-import { UserResponseDto } from './dto/user-reponse.dto';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +25,7 @@ export class UsersService {
 
     try {
       savedUser = await this.usersRepository.save(user);
+      return savedUser;
     } catch (error) {
       if (
         error instanceof QueryFailedError &&
@@ -36,7 +35,15 @@ export class UsersService {
       }
       throw error;
     }
-    return plainToInstance(UserResponseDto, savedUser);
+  }
+
+  async findUserById(id: string): Promise<User | null> {
+    const user = this.usersRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return user;
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
