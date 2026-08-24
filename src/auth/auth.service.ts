@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { PasswordService } from '../password/password.service';
-import { RefreshTokensDto } from './dto/refresh-tokens.dto';
 import { TokensService } from './tokens.service';
 
 @Injectable()
@@ -38,10 +37,10 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshTokens(refreshTokensDto: RefreshTokensDto) {
+  async refreshTokens(refreshToken: string) {
     const payload = await this.tokensService.verifyRefreshToken<{
       sub: string;
-    }>(refreshTokensDto.refreshToken);
+    }>(refreshToken);
 
     if (!payload) {
       throw new UnauthorizedException('Invalid token');
@@ -60,9 +59,9 @@ export class AuthService {
     const accessToken =
       await this.tokensService.generateAccessToken(newPayload);
 
-    const refreshToken =
+    const newRefreshToken =
       await this.tokensService.generateRefreshToken(newPayload);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken: newRefreshToken };
   }
 }

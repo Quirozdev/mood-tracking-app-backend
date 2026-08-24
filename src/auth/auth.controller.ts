@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -19,7 +20,8 @@ import {
 } from '@nestjs/swagger';
 import { User } from '../users/entities/user.entity';
 import { AuthGuard } from './auth.guard';
-import { RefreshTokensDto } from './dto/refresh-tokens.dto';
+import type { Response } from 'express';
+import { Cookies } from '../common/decorators/cookies.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -35,16 +37,29 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: '',
   })
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto.email, signInDto.password);
+  async signIn(
+    @Body() signInDto: SignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.signIn(
+      signInDto.email,
+      signInDto.password,
+    );
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+    return { accessToken, refreshToken };
   }
 
   @Post('/refresh-tokens')
   @ApiOperation({ summary: 'Refresh access and refresh tokens' })
   @ApiOkResponse()
   @ApiUnauthorizedResponse()
-  refreshTokens(@Body() refreshTokensDto: RefreshTokensDto) {
-    return this.authService.refreshTokens(refreshTokensDto);
+  refreshTokens(@Cookies('refreshToken') refreshToken: string) {
+    console.log(refreshToken);
+    return this.authService.refreshTokens(refreshToken);
   }
 
   @HttpCode(HttpStatus.OK)
