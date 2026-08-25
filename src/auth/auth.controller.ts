@@ -5,9 +5,9 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   Request,
   Res,
+  SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -22,6 +22,7 @@ import { User } from '../users/entities/user.entity';
 import { AuthGuard } from './auth.guard';
 import type { Response } from 'express';
 import { Cookies } from '../common/decorators/cookies.decorator';
+import { UserResponseDto } from '../users/dto/user-reponse.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -58,17 +59,16 @@ export class AuthController {
   @ApiOkResponse()
   @ApiUnauthorizedResponse()
   refreshTokens(@Cookies('refreshToken') refreshToken: string) {
-    console.log(refreshToken);
     return this.authService.refreshTokens(refreshToken);
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
-  @Get('/profile')
+  @Get('/me')
   @ApiOperation({ summary: 'Get own profile' })
-  @ApiOkResponse({})
-  @ApiUnauthorizedResponse({})
+  @ApiOkResponse({ type: UserResponseDto })
+  @SerializeOptions({ type: UserResponseDto })
   profile(@Request() req) {
-    return req.user;
+    return this.authService.getMe(req.user.sub);
   }
 }

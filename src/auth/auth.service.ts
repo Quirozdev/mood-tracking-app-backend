@@ -64,4 +64,8 @@ export class AuthService {
 
     return { accessToken, refreshToken: newRefreshToken };
   }
+
+  async getMe(userId: string) {
+    return await this.usersService.findUserById(userId);
+  }
 }
