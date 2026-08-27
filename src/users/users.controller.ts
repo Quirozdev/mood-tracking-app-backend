@@ -76,7 +76,6 @@ export class UsersController {
     )
     file: Express.Multer.File,
   ) {
-    console.log(`${__dirname}/${file.path}`);
     return this.usersService.updateAvatar(
       id,
       `${process.env.BASE_URL}/${file.path}`,
