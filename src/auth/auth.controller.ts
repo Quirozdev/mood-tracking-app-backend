@@ -2,8 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
-  HttpStatus,
   Post,
   Request,
   Res,
@@ -28,7 +26,6 @@ import { UserResponseDto } from '../users/dto/user-reponse.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
   @ApiOperation({ summary: 'Sign In' })
   @ApiCreatedResponse({
@@ -62,7 +59,6 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken);
   }
 
-  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   @Get('/me')
   @ApiOperation({ summary: 'Get own profile' })

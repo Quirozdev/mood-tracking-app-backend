@@ -31,6 +31,15 @@ export class UserResponseDto {
   @Expose()
   @ApiProperty({
     type: String,
+    description: 'Avatar URL',
+    default: 'https://test.com/image.jpeg',
+    nullable: true,
+  })
+  avatarUrl!: string | null;
+
+  @Expose()
+  @ApiProperty({
+    type: String,
     description: 'createdAt',
     default: '2026-08-19T22:55:25.702Z',
   })
