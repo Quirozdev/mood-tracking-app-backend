@@ -42,6 +42,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./test:/app/test
+      - ./public:/app/public
 
 volumes:
   postgres_test_data:
