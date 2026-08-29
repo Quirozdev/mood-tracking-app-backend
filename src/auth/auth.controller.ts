@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Request,
   Res,
@@ -12,6 +14,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import {
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
@@ -57,6 +60,20 @@ export class AuthController {
   @ApiUnauthorizedResponse()
   refreshTokens(@Cookies('refreshToken') refreshToken: string) {
     return this.authService.refreshTokens(refreshToken);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  @ApiOperation({ summary: 'Log out' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  @ApiUnauthorizedResponse()
+  async logOut(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
   }
 
   @UseGuards(AuthGuard)
