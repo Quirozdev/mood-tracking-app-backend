@@ -22,15 +22,15 @@ export class MoodService {
     });
   }
 
-  async logMoodEntry(userId: string, logMoodDto: LogMoodDto) {
+  async logMoodEntry(userId: string, day: string, logMoodDto: LogMoodDto) {
     const alreadyLoggedMoodEntry = await this.findMoodEntryByDayAndUser(
       userId,
-      logMoodDto.day,
+      day,
     );
 
     if (!alreadyLoggedMoodEntry) {
       const newMoodEntry = this.moodEntryRepository.create({
-        day: logMoodDto.day,
+        day: day,
         mood: logMoodDto.mood,
         feelings: logMoodDto.feelings,
         journalEntry: logMoodDto.journalEntry,

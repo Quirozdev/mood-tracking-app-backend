@@ -3,7 +3,6 @@ import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
-  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsString,
@@ -15,14 +14,6 @@ import { SleepHours } from '../enums/sleep-hours.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LogMoodDto {
-  @IsDateString({ strict: true })
-  @ApiProperty({
-    type: String,
-    description: 'Day where the mood entry is going to be logged',
-    example: '2026-09-01',
-  })
-  day!: string;
-
   @IsEnum(Mood)
   @ApiProperty({
     enum: Mood,
