@@ -4,9 +4,16 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigurationModule } from './config/configuration.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MoodModule } from './mood/mood.module';
 
 @Module({
-  imports: [ConfigurationModule, DatabaseModule, UsersModule, AuthModule],
+  imports: [
+    ConfigurationModule,
+    DatabaseModule,
+    UsersModule,
+    AuthModule,
+    MoodModule,
+  ],
   providers: [
     {
       provide: APP_INTERCEPTOR,

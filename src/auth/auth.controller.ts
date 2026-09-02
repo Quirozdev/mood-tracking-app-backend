@@ -68,7 +68,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   @ApiUnauthorizedResponse()
-  async logOut(@Res({ passthrough: true }) response: Response) {
+  logOut(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('refreshToken', {
       httpOnly: true,
       sameSite: 'none',

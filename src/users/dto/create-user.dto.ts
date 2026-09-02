@@ -15,7 +15,7 @@ export class CreateUserDto {
   @ApiProperty({
     type: String,
     description: 'Email',
-    default: 'test@email.com',
+    example: 'test@email.com',
   })
   email!: string;
 
@@ -25,7 +25,7 @@ export class CreateUserDto {
   @ApiProperty({
     type: String,
     description: 'Name',
-    default: 'John Doe',
+    example: 'John Doe',
     nullable: true,
   })
   name!: string;
@@ -35,7 +35,7 @@ export class CreateUserDto {
   @ApiProperty({
     type: String,
     description: 'Password',
-    default: 'Password1234.',
+    example: 'Password1234.',
   })
   password!: string;
 }

@@ -7,7 +7,7 @@ export class SignInDto {
   @ApiProperty({
     type: String,
     description: 'Email',
-    default: 'test@email.com',
+    example: 'test@email.com',
   })
   email!: string;
 
@@ -16,7 +16,7 @@ export class SignInDto {
   @ApiProperty({
     type: String,
     description: 'Password',
-    default: 'Password1234.',
+    example: 'Password1234.',
   })
   password!: string;
 }

@@ -7,7 +7,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'ID',
-    default: 'a21fb708-3d01-4875-957a-3872f0dd4f85',
+    example: 'a21fb708-3d01-4875-957a-3872f0dd4f85',
   })
   id!: string;
 
@@ -15,7 +15,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'Name',
-    default: 'John Doe',
+    example: 'John Doe',
     nullable: true,
   })
   name!: string | null;
@@ -24,7 +24,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'Email',
-    default: 'test@email.com',
+    example: 'test@email.com',
   })
   email!: string;
 
@@ -32,7 +32,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'Avatar URL',
-    default: 'https://test.com/image.jpeg',
+    example: 'https://test.com/image.jpeg',
     nullable: true,
   })
   avatarUrl!: string | null;
@@ -41,7 +41,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'createdAt',
-    default: '2026-08-19T22:55:25.702Z',
+    example: '2026-08-19T22:55:25.702Z',
   })
   createdAt!: Date;
 
@@ -49,7 +49,7 @@ export class UserResponseDto {
   @ApiProperty({
     type: String,
     description: 'createdAt',
-    default: '2026-08-19T22:55:25.702Z',
+    example: '2026-08-19T22:55:25.702Z',
     nullable: true,
   })
   updatedAt!: Date | null;
