@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  NotFoundException,
   Param,
   Put,
   Request,
@@ -10,6 +12,7 @@ import { LogMoodDto } from './dtos/log-mood.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import {
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -22,6 +25,30 @@ import { MoodEntryParamsDto } from './dtos/mood-entry-params.dto';
 @ApiTags('Moods')
 export class MoodController {
   constructor(private readonly moodService: MoodService) {}
+
+  @UseGuards(AuthGuard)
+  @Get(':day')
+  @ApiParam({
+    name: 'day',
+    type: String,
+    description: 'Day for the mood entry',
+    example: '2026-09-01',
+  })
+  @ApiOperation({
+    summary: 'Get mood entry from a given day',
+  })
+  @ApiOkResponse({ summary: 'Mood entry retrieved successfully' })
+  @ApiNotFoundResponse()
+  async getMoodEntryByDay(@Request() req, @Param() params: MoodEntryParamsDto) {
+    const moodEntry = await this.moodService.findMoodEntryByDayAndUser(
+      req.user.sub,
+      params.day,
+    );
+    if (!moodEntry) {
+      throw new NotFoundException('Mood entry not found');
+    }
+    return moodEntry;
+  }
 
   @UseGuards(AuthGuard)
   @Put(':day')
