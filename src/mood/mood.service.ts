@@ -52,16 +52,16 @@ export class MoodService {
   }
 
   async getAveragesInDateRange(userId: string, from: string, to: string) {
-    const moodAverage = await this.getMoodAverageForUser(userId, from, to);
-    const sleepHoursAverage = await this.getSleepHoursAverageForUser(
+    const moodData = await this.getMoodAverageDataForUser(userId, from, to);
+    const sleepHoursData = await this.getSleepHoursAverageDataForUser(
       userId,
       from,
       to,
     );
-    return { mood: moodAverage, sleepHours: sleepHoursAverage };
+    return { mood: moodData, sleepHours: sleepHoursData };
   }
 
-  private async getMoodAverageForUser(
+  private async getMoodAverageDataForUser(
     userId: string,
     from: string,
     to: string,
@@ -112,10 +112,10 @@ export class MoodService {
 
     const average = Math.round(total / totalCount);
 
-    return { value: valueToMood[average], average };
+    return { value: valueToMood[average], average, days: totalCount };
   }
 
-  private async getSleepHoursAverageForUser(
+  private async getSleepHoursAverageDataForUser(
     userId: string,
     from: string,
     to: string,
@@ -168,6 +168,6 @@ export class MoodService {
 
     const average = Math.round(total / totalCount);
 
-    return { value: valueToSleepHours[average], average };
+    return { value: valueToSleepHours[average], average, days: totalCount };
   }
 }
