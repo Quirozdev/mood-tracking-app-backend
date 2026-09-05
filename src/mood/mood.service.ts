@@ -39,6 +39,11 @@ export class MoodService {
         journalEntry: true,
         feelings: true,
       },
+      order: {
+        day: {
+          direction: 'ASC',
+        },
+      },
     });
   }
 
