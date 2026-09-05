@@ -24,6 +24,24 @@ export class MoodService {
     });
   }
 
+  async getMoodEntries(userId: string) {
+    return await this.moodEntryRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      select: {
+        id: true,
+        day: true,
+        mood: true,
+        sleepHours: true,
+        journalEntry: true,
+        feelings: true,
+      },
+    });
+  }
+
   async logMoodEntry(userId: string, day: string, logMoodDto: LogMoodDto) {
     const alreadyLoggedMoodEntry = await this.findMoodEntryByDayAndUser(
       userId,

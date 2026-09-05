@@ -23,11 +23,26 @@ import {
 import { MoodService } from './mood.service';
 import { MoodEntryParamsDto } from './dtos/mood-entry-params.dto';
 import { GetAveragesQueryDto } from './dtos/get-averages-query.dto';
+import { MoodEntryResponseDto } from './dtos/mood-entry-response.dto';
+import { GetMoodEntriesResponseDto } from './dtos/get-mood-entries-response.dto';
 
 @Controller('moods')
 @ApiTags('Moods')
 export class MoodController {
   constructor(private readonly moodService: MoodService) {}
+
+  @UseGuards(AuthGuard)
+  @Get('/entries')
+  @ApiOperation({
+    summary: 'Get mood entries',
+  })
+  @ApiOkResponse({
+    summary: 'Mood entry retrieved successfully',
+    type: [GetMoodEntriesResponseDto],
+  })
+  async getEntries(@Request() req): Promise<GetMoodEntriesResponseDto[]> {
+    return await this.moodService.getMoodEntries(req.user.sub);
+  }
 
   @UseGuards(AuthGuard)
   @Get('/averages')
@@ -46,8 +61,8 @@ export class MoodController {
     description: 'Day from where the averages will end to be calculated',
     example: '2026-09-05',
   })
-  getAverages(@Request() req, @Query() query: GetAveragesQueryDto) {
-    return this.moodService.getAveragesInDateRange(
+  async getAverages(@Request() req, @Query() query: GetAveragesQueryDto) {
+    return await this.moodService.getAveragesInDateRange(
       req.user.sub,
       query.from,
       query.to,
@@ -65,7 +80,10 @@ export class MoodController {
     description: 'Day for the mood entry',
     example: '2026-09-01',
   })
-  @ApiOkResponse({ summary: 'Mood entry retrieved successfully' })
+  @ApiOkResponse({
+    summary: 'Mood entry retrieved successfully',
+    type: MoodEntryResponseDto,
+  })
   @ApiNotFoundResponse()
   async getMoodEntryByDay(@Request() req, @Param() params: MoodEntryParamsDto) {
     const moodEntry = await this.moodService.findMoodEntryByDayAndUser(
@@ -95,11 +113,15 @@ export class MoodController {
     type: LogMoodDto,
   })
   @ApiBadRequestResponse()
-  logMoodEntry(
+  async logMoodEntry(
     @Request() req,
     @Body() logMoodDto: LogMoodDto,
     @Param() params: MoodEntryParamsDto,
   ) {
-    return this.moodService.logMoodEntry(req.user.sub, params.day, logMoodDto);
+    return await this.moodService.logMoodEntry(
+      req.user.sub,
+      params.day,
+      logMoodDto,
+    );
   }
 }

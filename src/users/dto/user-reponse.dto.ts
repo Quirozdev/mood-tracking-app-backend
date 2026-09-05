@@ -48,7 +48,7 @@ export class UserResponseDto {
   @Expose()
   @ApiProperty({
     type: String,
-    description: 'createdAt',
+    description: 'updatedAt',
     example: '2026-08-19T22:55:25.702Z',
     nullable: true,
   })
