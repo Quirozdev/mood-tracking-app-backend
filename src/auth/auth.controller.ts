@@ -5,10 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Request,
   Res,
   SerializeOptions,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -19,11 +17,13 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { User } from '../users/entities/user.entity';
-import { AuthGuard } from './auth.guard';
 import type { Response } from 'express';
 import { Cookies } from '../common/decorators/cookies.decorator';
 import { UserResponseDto } from '../users/dto/user-reponse.dto';
+import { Auth } from './decorators/auth.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { AuthenticatedUser } from './types/authenticated-user.type';
+import { TokensResponseDto } from './dto/tokens-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,11 +33,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign In' })
   @ApiCreatedResponse({
     description: 'Logged in successfully',
-    type: User,
+    type: TokensResponseDto,
   })
-  @ApiUnauthorizedResponse({
-    description: '',
-  })
+  @ApiUnauthorizedResponse()
   async signIn(
     @Body() signInDto: SignInDto,
     @Res({ passthrough: true }) response: Response,
@@ -56,18 +54,17 @@ export class AuthController {
 
   @Post('/refresh-tokens')
   @ApiOperation({ summary: 'Refresh access and refresh tokens' })
-  @ApiOkResponse()
+  @ApiOkResponse({ type: TokensResponseDto })
   @ApiUnauthorizedResponse()
   refreshTokens(@Cookies('refreshToken') refreshToken: string) {
     return this.authService.refreshTokens(refreshToken);
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Post('logout')
   @ApiOperation({ summary: 'Log out' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
-  @ApiUnauthorizedResponse()
   logOut(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('refreshToken', {
       httpOnly: true,
@@ -76,12 +73,12 @@ export class AuthController {
     });
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Get('/me')
   @ApiOperation({ summary: 'Get own profile' })
   @ApiOkResponse({ type: UserResponseDto })
   @SerializeOptions({ type: UserResponseDto })
-  profile(@Request() req) {
-    return this.authService.getMe(req.user.sub);
+  profile(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.getMe(user.sub);
   }
 }

@@ -74,6 +74,7 @@ describe('AuthService', () => {
         name: 'Test',
         email: 'test@gmail.com',
         password: 'hashedPassword',
+        avatarUrl: '',
         createdAt: new Date(),
         updatedAt: new Date(),
       };

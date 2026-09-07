@@ -6,11 +6,8 @@ import {
   Param,
   Put,
   Query,
-  Request,
-  UseGuards,
 } from '@nestjs/common';
 import { LogMoodDto } from './dtos/log-mood.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -25,13 +22,16 @@ import { MoodEntryParamsDto } from './dtos/mood-entry-params.dto';
 import { GetAveragesQueryDto } from './dtos/get-averages-query.dto';
 import { MoodEntryResponseDto } from './dtos/mood-entry-response.dto';
 import { GetMoodEntriesResponseDto } from './dtos/get-mood-entries-response.dto';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 
 @Controller('moods')
 @ApiTags('Moods')
 export class MoodController {
   constructor(private readonly moodService: MoodService) {}
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Get('/entries')
   @ApiOperation({
     summary: 'Get mood entries',
@@ -40,11 +40,13 @@ export class MoodController {
     summary: 'Mood entry retrieved successfully',
     type: [GetMoodEntriesResponseDto],
   })
-  async getEntries(@Request() req): Promise<GetMoodEntriesResponseDto[]> {
-    return await this.moodService.getMoodEntries(req.user.sub);
+  async getEntries(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<GetMoodEntriesResponseDto[]> {
+    return await this.moodService.getMoodEntries(user.sub);
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Get('/averages')
   @ApiOperation({
     summary: 'Get averages for mood and sleep hours in a given range of days',
@@ -61,15 +63,18 @@ export class MoodController {
     description: 'Day from where the averages will end to be calculated',
     example: '2026-09-05',
   })
-  async getAverages(@Request() req, @Query() query: GetAveragesQueryDto) {
+  async getAverages(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: GetAveragesQueryDto,
+  ) {
     return await this.moodService.getAveragesInDateRange(
-      req.user.sub,
+      user.sub,
       query.from,
       query.to,
     );
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Get(':day')
   @ApiOperation({
     summary: 'Get mood entry from a given day',
@@ -85,9 +90,12 @@ export class MoodController {
     type: MoodEntryResponseDto,
   })
   @ApiNotFoundResponse()
-  async getMoodEntryByDay(@Request() req, @Param() params: MoodEntryParamsDto) {
+  async getMoodEntryByDay(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param() params: MoodEntryParamsDto,
+  ) {
     const moodEntry = await this.moodService.findMoodEntryByDayAndUser(
-      req.user.sub,
+      user.sub,
       params.day,
     );
     if (!moodEntry) {
@@ -96,7 +104,7 @@ export class MoodController {
     return moodEntry;
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Put(':day')
   @ApiOperation({
     summary:
@@ -114,12 +122,12 @@ export class MoodController {
   })
   @ApiBadRequestResponse()
   async logMoodEntry(
-    @Request() req,
+    @CurrentUser() user: AuthenticatedUser,
     @Body() logMoodDto: LogMoodDto,
     @Param() params: MoodEntryParamsDto,
   ) {
     return await this.moodService.logMoodEntry(
-      req.user.sub,
+      user.sub,
       params.day,
       logMoodDto,
     );

@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  FileTypeValidator,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -9,7 +8,6 @@ import {
   Put,
   SerializeOptions,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -30,7 +28,7 @@ import type { Express } from 'express';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { diskStorage } from 'multer';
 import { UpdateUserDto } from './dto/update-user-dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { Auth } from '../auth/decorators/auth.decorator';
 
 @Controller('users')
 @ApiTags('Users')
@@ -49,7 +47,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Put('/:id/upload-avatar')
   @ApiOperation({ summary: 'Upload an avatar for own profile' })
   @ApiConsumes('multipart/form-data')
@@ -82,7 +80,7 @@ export class UsersController {
     );
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Put('/:id')
   @ApiOperation({ summary: 'Update user' })
   @ApiOkResponse({
