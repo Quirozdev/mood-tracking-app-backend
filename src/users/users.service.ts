@@ -4,11 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordService } from '../password/password.service';
 import { UpdateUserDto } from './dto/update-user-dto';
+import { isUniqueViolation } from '../common/database/is-unique-violation';
 
 @Injectable()
 export class UsersService {
@@ -51,10 +52,7 @@ export class UsersService {
       savedUser = await this.usersRepository.save(user);
       return savedUser;
     } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        error.driverError?.code === '23505'
-      ) {
+      if (isUniqueViolation(error)) {
         throw new ConflictException('An user with this email already exists');
       }
       throw error;
