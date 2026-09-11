@@ -24,11 +24,13 @@ import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthenticatedUser } from './types/authenticated-user.type';
 import { TokensResponseDto } from './dto/tokens-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 15, ttl: 180000 } })
   @Post('login')
   @ApiOperation({ summary: 'Sign In' })
   @ApiCreatedResponse({
