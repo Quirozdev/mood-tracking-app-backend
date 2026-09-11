@@ -15,7 +15,11 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+    }),
+  );
 
   app.use(cookieParser());
 
