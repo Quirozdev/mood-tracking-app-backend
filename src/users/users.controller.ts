@@ -15,6 +15,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
@@ -29,6 +30,8 @@ import { UploadAvatarDto } from './dto/upload-avatar.dto';
 import { diskStorage } from 'multer';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { Auth } from '../auth/decorators/auth.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 
 @Controller('users')
 @ApiTags('Users')
@@ -64,6 +67,7 @@ export class UsersController {
   @SerializeOptions({ type: UserResponseDto })
   async uploadAvatar(
     @Param('id') id: string,
+    @CurrentUser() currentUser: AuthenticatedUser,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -77,6 +81,7 @@ export class UsersController {
     return this.usersService.updateAvatar(
       id,
       `${process.env.BASE_URL}/${file.path}`,
+      currentUser,
     );
   }
 
@@ -88,11 +93,13 @@ export class UsersController {
     type: UpdateUserDto,
   })
   @ApiBadRequestResponse()
+  @ApiForbiddenResponse({ summary: 'You cannot update another user' })
   @SerializeOptions({ type: UserResponseDto })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() currentUser: AuthenticatedUser,
   ): Promise<UserResponseDto> {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(id, updateUserDto, currentUser);
   }
 }

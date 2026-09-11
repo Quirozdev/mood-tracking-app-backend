@@ -28,7 +28,7 @@ export class CreateUserDto {
     example: 'John Doe',
     nullable: true,
   })
-  name!: string;
+  name?: string | null;
 
   @IsStrongPassword()
   @MaxLength(55)

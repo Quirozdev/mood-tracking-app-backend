@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PasswordService } from '../password/password.service';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { isUniqueViolation } from '../common/database/is-unique-violation';
+import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 
 @Injectable()
 export class UsersService {
@@ -59,19 +61,33 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    currentUser: AuthenticatedUser,
+  ) {
     const user = await this.findUserById(id);
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+    if (currentUser.sub !== id) {
+      throw new ForbiddenException('You cannot update another user');
     }
     const mergedUser = this.usersRepository.merge(user, updateUserDto);
     return await this.usersRepository.save(mergedUser);
   }
 
-  async updateAvatar(id: string, fileUrl: string) {
+  async updateAvatar(
+    id: string,
+    fileUrl: string,
+    currentUser: AuthenticatedUser,
+  ) {
     const user = await this.findUserById(id);
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+    if (currentUser.sub !== id) {
+      throw new ForbiddenException('You cannot update another user');
     }
     user.avatarUrl = fileUrl;
     return await this.usersRepository.save(user);
