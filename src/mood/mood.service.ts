@@ -5,6 +5,12 @@ import { Repository } from 'typeorm';
 import { LogMoodDto } from './dtos/log-mood.dto';
 import { Mood } from './enums/mood.enum';
 import { SleepHours } from './enums/sleep-hours.enum';
+import {
+  moodToValue,
+  sleepHoursToValue,
+  valueToMood,
+  valueToSleepHours,
+} from './consts/mood.const';
 
 @Injectable()
 export class MoodService {
@@ -91,22 +97,6 @@ export class MoodService {
   ) {
     const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
 
-    const moodToValue = {
-      [Mood.VERY_SAD]: -2,
-      [Mood.SAD]: -1,
-      [Mood.NEUTRAL]: -0,
-      [Mood.HAPPY]: 1,
-      [Mood.VERY_HAPPY]: 2,
-    };
-
-    const valueToMood: Record<number, Mood> = {
-      [-2]: Mood.VERY_SAD,
-      [-1]: Mood.SAD,
-      0: Mood.NEUTRAL,
-      1: Mood.HAPPY,
-      2: Mood.VERY_HAPPY,
-    };
-
     queryBuilder.select('moods.mood', 'mood');
     queryBuilder.addSelect('COUNT(moods.mood)', 'count');
     queryBuilder.groupBy('moods.mood');
@@ -144,22 +134,6 @@ export class MoodService {
     to: string,
   ) {
     const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
-
-    const sleepHoursToValue = {
-      [SleepHours.ZERO_TO_TWO_HOURS]: 0,
-      [SleepHours.THREE_TO_FOUR_HOURS]: 1,
-      [SleepHours.FIVE_TO_SIX_HOURS]: 2,
-      [SleepHours.SEVEN_TO_EIGHT_HOURS]: 3,
-      [SleepHours.NINE_HOURS_OR_MORE]: 4,
-    };
-
-    const valueToSleepHours: Record<number, SleepHours> = {
-      0: SleepHours.ZERO_TO_TWO_HOURS,
-      1: SleepHours.THREE_TO_FOUR_HOURS,
-      2: SleepHours.FIVE_TO_SIX_HOURS,
-      3: SleepHours.SEVEN_TO_EIGHT_HOURS,
-      4: SleepHours.NINE_HOURS_OR_MORE,
-    };
 
     queryBuilder.select('moods.sleepHours', 'sleepHours');
     queryBuilder.addSelect('COUNT(moods.sleepHours)', 'count');
