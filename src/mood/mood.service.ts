@@ -54,30 +54,17 @@ export class MoodService {
   }
 
   async logMoodEntry(userId: string, day: string, logMoodDto: LogMoodDto) {
-    const alreadyLoggedMoodEntry = await this.findMoodEntryByDayAndUser(
-      userId,
-      day,
+    await this.moodEntryRepository.upsert(
+      {
+        ...logMoodDto,
+        day,
+        user: { id: userId },
+      },
+      {
+        conflictPaths: ['day', 'user'],
+      },
     );
-
-    if (!alreadyLoggedMoodEntry) {
-      const newMoodEntry = this.moodEntryRepository.create({
-        day: day,
-        mood: logMoodDto.mood,
-        feelings: logMoodDto.feelings,
-        journalEntry: logMoodDto.journalEntry,
-        sleepHours: logMoodDto.sleepHours,
-        user: {
-          id: userId,
-        },
-      });
-      return await this.moodEntryRepository.save(newMoodEntry);
-    }
-
-    const mergedMoodEntry = this.moodEntryRepository.merge(
-      alreadyLoggedMoodEntry,
-      logMoodDto,
-    );
-    return await this.moodEntryRepository.save(mergedMoodEntry);
+    return this.findMoodEntryByDayAndUser(userId, day);
   }
 
   async getAveragesFromPreviousCheckins(userId: string, lastCheckIns: number) {
