@@ -80,36 +80,90 @@ export class MoodService {
     return await this.moodEntryRepository.save(mergedMoodEntry);
   }
 
-  async getAveragesInDateRange(userId: string, from: string, to: string) {
-    const moodData = await this.getMoodAverageDataForUser(userId, from, to);
+  async getAveragesFromPreviousCheckins(userId: string, lastCheckIns: number) {
+    const moodData = await this.getMoodAverageDataForUser(userId, lastCheckIns);
     const sleepHoursData = await this.getSleepHoursAverageDataForUser(
       userId,
-      from,
-      to,
+      lastCheckIns,
     );
     return { mood: moodData, sleepHours: sleepHoursData };
   }
 
+  // compare last 5 days with their previous 5 days
   private async getMoodAverageDataForUser(
     userId: string,
-    from: string,
-    to: string,
+    lastCheckIns: number,
   ) {
     const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
 
     queryBuilder.select('moods.mood', 'mood');
     queryBuilder.addSelect('COUNT(moods.mood)', 'count');
     queryBuilder.groupBy('moods.mood');
+    queryBuilder.addGroupBy('moods.day');
+    queryBuilder.orderBy('moods.day', 'DESC');
 
     queryBuilder.andWhere('moods.userId = :id', { id: userId });
-    queryBuilder.andWhere('moods.day >= :from', { from });
-    queryBuilder.andWhere('moods.day <= :to', { to });
+
+    queryBuilder.limit(lastCheckIns * 2);
 
     const data = await queryBuilder.getRawMany<{
       mood: Mood;
       count: number;
     }>();
 
+    const lastCheckInsSlice = data.slice(0, lastCheckIns);
+
+    const previousCheckInsSlice = data.slice(lastCheckIns, data.length);
+
+    const lastCheckInsResult =
+      this.calculateMoodAverageResult(lastCheckInsSlice);
+
+    const previousCheckInsResult = this.calculateMoodAverageResult(
+      previousCheckInsSlice,
+    );
+
+    return {
+      last: lastCheckInsResult,
+      previous: previousCheckInsResult,
+    };
+  }
+
+  private async getSleepHoursAverageDataForUser(
+    userId: string,
+    lastCheckIns: number,
+  ) {
+    const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
+
+    queryBuilder.select('moods.sleepHours', 'sleepHours');
+    queryBuilder.addSelect('COUNT(moods.sleepHours)', 'count');
+    queryBuilder.groupBy('moods.sleepHours');
+    queryBuilder.addGroupBy('moods.day');
+    queryBuilder.orderBy('moods.day', 'DESC');
+
+    queryBuilder.andWhere('moods.userId = :id', { id: userId });
+
+    queryBuilder.limit(lastCheckIns * 2);
+
+    const data = await queryBuilder.getRawMany<{
+      sleepHours: SleepHours;
+      count: number;
+    }>();
+
+    const lastCheckInsSlice = data.slice(0, lastCheckIns);
+
+    const previousCheckInsSlice = data.slice(lastCheckIns, data.length);
+
+    const lastCheckInsResult =
+      this.calculateSleepHoursAverageResult(lastCheckInsSlice);
+
+    const previousCheckInsResult = this.calculateSleepHoursAverageResult(
+      previousCheckInsSlice,
+    );
+
+    return { last: lastCheckInsResult, previous: previousCheckInsResult };
+  }
+
+  private calculateMoodAverageResult(data: { mood: Mood; count: number }[]) {
     const { total, totalCount } = data.reduce(
       (prev, current) => {
         return {
@@ -125,29 +179,16 @@ export class MoodService {
 
     const average = Math.round(total / totalCount);
 
-    return { value: valueToMood[average], average, days: totalCount };
+    return {
+      value: valueToMood[average],
+      average,
+      days: totalCount,
+    };
   }
 
-  private async getSleepHoursAverageDataForUser(
-    userId: string,
-    from: string,
-    to: string,
+  private calculateSleepHoursAverageResult(
+    data: { sleepHours: SleepHours; count: number }[],
   ) {
-    const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
-
-    queryBuilder.select('moods.sleepHours', 'sleepHours');
-    queryBuilder.addSelect('COUNT(moods.sleepHours)', 'count');
-    queryBuilder.groupBy('moods.sleepHours');
-
-    queryBuilder.andWhere('moods.userId = :id', { id: userId });
-    queryBuilder.andWhere('moods.day >= :from', { from });
-    queryBuilder.andWhere('moods.day <= :to', { to });
-
-    const data = await queryBuilder.getRawMany<{
-      sleepHours: SleepHours;
-      count: number;
-    }>();
-
     const { total, totalCount } = data.reduce(
       (prev, current) => {
         return {
@@ -165,6 +206,10 @@ export class MoodService {
 
     const average = Math.round(total / totalCount);
 
-    return { value: valueToSleepHours[average], average, days: totalCount };
+    return {
+      value: valueToSleepHours[average],
+      average,
+      days: totalCount,
+    };
   }
 }

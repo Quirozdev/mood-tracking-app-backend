@@ -19,12 +19,12 @@ import {
 } from '@nestjs/swagger';
 import { MoodService } from './mood.service';
 import { MoodEntryParamsDto } from './dtos/mood-entry-params.dto';
-import { GetAveragesQueryDto } from './dtos/get-averages-query.dto';
 import { MoodEntryResponseDto } from './dtos/mood-entry-response.dto';
 import { GetMoodEntriesResponseDto } from './dtos/get-mood-entries-response.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
+import { GetAveragesQueryDto } from './dtos/get-averages-query.dto';
 
 @Controller('moods')
 @ApiTags('Moods')
@@ -49,28 +49,22 @@ export class MoodController {
   @Auth()
   @Get('/averages')
   @ApiOperation({
-    summary: 'Get averages for mood and sleep hours in a given range of days',
+    summary: 'Get averages for mood and sleep hours of previous checkins',
   })
   @ApiQuery({
-    name: 'from',
-    type: String,
-    description: 'Day from where the averages will start to be calculated',
-    example: '2026-09-01',
-  })
-  @ApiQuery({
-    name: 'to',
-    type: String,
-    description: 'Day from where the averages will end to be calculated',
-    example: '2026-09-05',
+    name: 'lastCheckIns',
+    type: Number,
+    description:
+      'The last n check-ins of mood entries that will be compared with their n previous check-ins',
+    example: 5,
   })
   async getAverages(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: GetAveragesQueryDto,
   ) {
-    return await this.moodService.getAveragesInDateRange(
+    return await this.moodService.getAveragesFromPreviousCheckins(
       user.sub,
-      query.from,
-      query.to,
+      query.lastCheckIns,
     );
   }
 

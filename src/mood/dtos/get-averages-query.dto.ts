@@ -1,9 +1,6 @@
-import { IsDateString } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class GetAveragesQueryDto {
-  @IsDateString({ strict: true })
-  from!: string;
-
-  @IsDateString({ strict: true })
-  to!: string;
+  @IsNumber()
+  lastCheckIns!: number;
 }
