@@ -25,6 +25,7 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { GetAveragesQueryDto } from './dtos/get-averages-query.dto';
+import { GetMoodEntriesQueryDto } from './dtos/get-mood-entries-query.dto';
 
 @Controller('moods')
 @ApiTags('Moods')
@@ -40,10 +41,30 @@ export class MoodController {
     summary: 'Mood entry retrieved successfully',
     type: [GetMoodEntriesResponseDto],
   })
+  @ApiQuery({
+    name: 'from',
+    type: String,
+    required: false,
+    description:
+      'Start date (inclusive) for filtering mood entries (YYYY-MM-DD)',
+    example: '2026-11-26',
+  })
+  @ApiQuery({
+    name: 'to',
+    type: String,
+    required: false,
+    description: 'End date (inclusive) for filtering mood entries (YYYY-MM-DD)',
+    example: '2026-11-27',
+  })
   async getEntries(
     @CurrentUser() user: AuthenticatedUser,
+    @Query() query: GetMoodEntriesQueryDto,
   ): Promise<GetMoodEntriesResponseDto[]> {
-    return await this.moodService.getMoodEntries(user.sub);
+    return await this.moodService.getMoodEntries(
+      user.sub,
+      query.from,
+      query.to,
+    );
   }
 
   @Auth()

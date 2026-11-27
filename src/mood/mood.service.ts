@@ -30,27 +30,31 @@ export class MoodService {
     });
   }
 
-  async getMoodEntries(userId: string) {
-    return await this.moodEntryRepository.find({
-      where: {
-        user: {
-          id: userId,
-        },
-      },
-      select: {
-        id: true,
-        day: true,
-        mood: true,
-        sleepHours: true,
-        journalEntry: true,
-        feelings: true,
-      },
-      order: {
-        day: {
-          direction: 'ASC',
-        },
-      },
-    });
+  async getMoodEntries(userId: string, from?: string, to?: string) {
+    const queryBuilder = this.moodEntryRepository.createQueryBuilder('moods');
+
+    queryBuilder.select([
+      'moods.id',
+      'moods.day',
+      'moods.mood',
+      'moods.sleepHours',
+      'moods.journalEntry',
+      'moods.feelings',
+    ]);
+
+    queryBuilder.orderBy('moods.day', 'ASC');
+
+    queryBuilder.where('moods.userId = :id', { id: userId });
+
+    if (from) {
+      queryBuilder.andWhere('moods.day >= :from', { from });
+    }
+
+    if (to) {
+      queryBuilder.andWhere('moods.day <= :to', { to });
+    }
+
+    return queryBuilder.getMany();
   }
 
   async logMoodEntry(userId: string, day: string, logMoodDto: LogMoodDto) {
