@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -24,14 +25,13 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-reponse.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express } from 'express';
 import { UploadAvatarDto } from './dto/upload-avatar.dto';
-import { diskStorage } from 'multer';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 @ApiTags('Users')
@@ -57,13 +57,7 @@ export class UsersController {
   @ApiBody({
     type: UploadAvatarDto,
   })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './public/uploads',
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   @SerializeOptions({ type: UserResponseDto })
   async uploadAvatar(
     @Param('id') id: string,
@@ -72,17 +66,13 @@ export class UsersController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 250 * 1024 }),
-          // new FileTypeValidator({ fileType: /^image\/(png|jpeg)$/ }),
+          new FileTypeValidator({ fileType: /^image\/(png|jpeg)$/ }),
         ],
       }),
     )
     file: Express.Multer.File,
   ) {
-    return this.usersService.updateAvatar(
-      id,
-      `${process.env.BASE_URL}/${file.path}`,
-      currentUser,
-    );
+    return this.usersService.updateAvatar(id, file, currentUser);
   }
 
   @Auth()

@@ -12,12 +12,14 @@ import { PasswordService } from '../password/password.service';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { isUniqueViolation } from '../common/database/is-unique-violation';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly passwordManager: PasswordService,
+    private readonly storageService: StorageService,
   ) {}
 
   async findUserById(id: string): Promise<User | null> {
@@ -26,7 +28,16 @@ export class UsersService {
         id,
       },
     });
-    return user;
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const avatarUrl = user?.avatarUrl
+      ? await this.storageService.getPresignedDownloadUrl(user?.avatarUrl)
+      : null;
+
+    return { ...user, avatarUrl };
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
@@ -79,7 +90,7 @@ export class UsersService {
 
   async updateAvatar(
     id: string,
-    fileUrl: string,
+    file: Express.Multer.File,
     currentUser: AuthenticatedUser,
   ) {
     const user = await this.findUserById(id);
@@ -89,7 +100,16 @@ export class UsersService {
     if (currentUser.sub !== id) {
       throw new ForbiddenException('You cannot update another user');
     }
-    user.avatarUrl = fileUrl;
+
+    const bucketS3 = 'test';
+
+    const key = await this.storageService.upload(
+      file.buffer,
+      bucketS3,
+      `users/${id}/avatar`,
+    );
+
+    user.avatarUrl = key;
     return await this.usersRepository.save(user);
   }
 }
